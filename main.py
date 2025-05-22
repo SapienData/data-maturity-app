@@ -171,17 +171,17 @@ if not st.session_state.started:
         if st.button("Start Survey"):
             st.session_state.started = True
             # ✅ Save early details immediately
-                client = get_gsheet_client()
-                sheet = client.open("Data Maturity Leads").sheet1
-                # Append row and estimate the row number
-                sheet.append_row([
-                    st.session_state.name,
-                    st.session_state.email
-                ])
+            client = get_gsheet_client()
+            sheet = client.open("Data Maturity Leads").sheet1
+            # Append row and estimate the row number
+            sheet.append_row([
+                st.session_state.name,
+                st.session_state.email
+            ])
     
-                # Save row number in session (row count + 1 for 1-based index)
-                st.session_state.row_num = len(sheet.get_all_values())
-            st.rerun()
+            # Save row number in session (row count + 1 for 1-based index)
+            st.session_state.row_num = len(sheet.get_all_values())
+        st.rerun()
     else:
         st.warning("Please enter your name and email to begin.")
     st.stop()
