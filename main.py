@@ -170,6 +170,17 @@ if not st.session_state.started:
     if st.session_state.name and st.session_state.email:
         if st.button("Start Survey"):
             st.session_state.started = True
+            # ✅ Save early details immediately
+                client = get_gsheet_client()
+                sheet = client.open("Data Maturity Leads").sheet1
+                # Append row and estimate the row number
+                sheet.append_row([
+                    st.session_state.name,
+                    st.session_state.email
+                ])
+    
+                # Save row number in session (row count + 1 for 1-based index)
+                st.session_state.row_num = len(sheet.get_all_values())
             st.rerun()
     else:
         st.warning("Please enter your name and email to begin.")
@@ -259,11 +270,19 @@ else:
                 # Save to Google Sheet
                 client = get_gsheet_client()
                 sheet = client.open("Data Maturity Leads").sheet1
-                row = [st.session_state.name, st.session_state.email, total_score, tier]
+                row_num = st.session_state.row_num
+
+                # Update Score (column 3) and Tier (column 4)
+                sheet.update_cell(row_num, 3, total_score)  # Column C
+                sheet.update_cell(row_num, 4, tier)         # Column D
+
+                # Now loop through Q/A pairs starting from column 5 (E)
+                col = 5
                 for r in st.session_state.responses:
-                    row.append(r["question"])
-                    row.append(r["answer"])
-                sheet.append_row(row)
+                    sheet.update_cell(row_num, col, r["question"])
+                    col += 1
+                    sheet.update_cell(row_num, col, r["answer"])
+                    col += 1
 
                 # Send email notification
                 send_mailjet_email(st.session_state.name,st.session_state.email,total_score,tier)
